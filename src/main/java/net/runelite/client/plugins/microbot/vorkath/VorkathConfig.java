@@ -119,10 +119,32 @@ public interface VorkathConfig extends Config {
     }
 
     @ConfigItem(
+            keyName = "UseOtherPlayerPOH",
+            name = "Use Another Player's POH",
+            description = "Use another player's house instead of your own",
+            position = 1,
+            section = pohSection
+    )
+    default boolean useOtherPlayerPOH() {
+        return false;
+    }
+
+    @ConfigItem(
+            keyName = "OtherPlayerName",
+            name = "Player Name",
+            description = "Name of the player whose house to use",
+            position = 2,
+            section = pohSection
+    )
+    default String otherPlayerName() {
+        return "";
+    }
+
+    @ConfigItem(
             keyName = "RejuvenationPool",
             name = "Rejuvenation Pool",
             description = "Use POH rejuv Pool to restore stats",
-            position = 1,
+            position = 3,
             section = pohSection
     )
     default boolean rejuvinationPool() {

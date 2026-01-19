@@ -24,6 +24,7 @@ import net.runelite.client.plugins.microbot.util.grandexchange.Rs2GrandExchange;
 import net.runelite.client.plugins.microbot.util.grounditem.LootingParameters;
 import net.runelite.client.plugins.microbot.util.grounditem.Rs2GroundItem;
 import net.runelite.client.plugins.microbot.util.inventory.Rs2Inventory;
+import net.runelite.client.plugins.microbot.util.keyboard.Rs2Keyboard;
 import net.runelite.client.plugins.microbot.util.magic.Rs2Magic;
 import net.runelite.client.plugins.microbot.util.magic.Rs2Spells;
 import net.runelite.client.plugins.microbot.util.math.Rs2Random;
@@ -583,6 +584,38 @@ public class VorkathScript extends Script {
     }
 
     private boolean teleToPoh() {
+        // If using another player's house, teleport to Rimmington portal
+        if (config.useOtherPlayerPOH() && !config.otherPlayerName().isEmpty()) {
+            // Teleport to Rimmington (house portal location)
+            if (Rs2Magic.canCast(MagicAction.TELEPORT_TO_HOUSE)) {
+                Rs2Magic.cast(MagicAction.TELEPORT_TO_HOUSE);
+                sleepUntil(() -> Rs2GameObject.findObjectById(ObjectID.POH_RIMMINGTON_PORTAL) != null, 5000);
+            } else if (Rs2Inventory.hasItem("Teleport to house")) {
+                Rs2Inventory.interact("Teleport to house", "break");
+                sleepUntil(() -> Rs2GameObject.findObjectById(ObjectID.POH_RIMMINGTON_PORTAL) != null, 5000);
+            } else {
+                return false;
+            }
+            
+            // Enter friend's house
+            if (Rs2GameObject.interact(ObjectID.POH_RIMMINGTON_PORTAL, "Friend's house")) {
+                sleepUntil(() -> Rs2Widget.hasWidget("Enter name"), 3000);
+                
+                // Check if player is in recent list or need to type name
+                if (Rs2Widget.hasWidget(config.otherPlayerName())) {
+                    Rs2Widget.clickWidget(config.otherPlayerName());
+                } else if (Rs2Widget.hasWidget("Enter name")) {
+                    Rs2Keyboard.typeString(config.otherPlayerName());
+                    Rs2Keyboard.enter();
+                }
+                
+                sleepUntil(() -> Rs2GameObject.findObjectById(4525) != null, 5000);
+                return true;
+            }
+            return false;
+        }
+        
+        // Normal POH teleport (own house)
         if (Rs2Magic.canCast(MagicAction.TELEPORT_TO_HOUSE)) {
             Rs2Magic.cast(MagicAction.TELEPORT_TO_HOUSE);
             sleepUntil(() -> Rs2GameObject.findObjectById(4525) != null);
